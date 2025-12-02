@@ -40,6 +40,13 @@
   --shadow-float: 0 16px 40px -10px rgba(255, 140, 66, 0.3); 
   --shadow-inner: inset 0 2px 4px rgba(0,0,0,0.02);
   
+  /* Z-Index Hierarchy */
+  --z-back: 0;
+  --z-normal: 10;
+  --z-fixed: 100;
+  --z-modal: 2000;
+  --z-toast: 3000;
+
   --safe-bottom: env(safe-area-inset-bottom, 20px);
   --header-height: 80px;
   --mobile-header-height: 64px;
@@ -62,7 +69,7 @@ body {
   margin: 0; padding: 0;
   line-height: 1.5;
   padding-bottom: calc(90px + var(--safe-bottom)); /* Espaço nav */
-  padding-top: var(--mobile-header-height);
+  padding-top: calc(var(--mobile-header-height) + 20px); /* Evita sobreposição inicial */
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
@@ -171,6 +178,7 @@ input:focus, select:focus, textarea:focus {
     border-color: var(--primary); 
     box-shadow: 0 0 0 4px rgba(255, 140, 66, 0.1);
 }
+.input-readonly { background: #e9ecef; color: #6c757d; cursor: not-allowed; }
 
 /* Badges & Tags */
 .status-badge {
@@ -201,6 +209,7 @@ input:focus, select:focus, textarea:focus {
   margin-bottom: 40px; color: white;
   position: relative; overflow: hidden;
   box-shadow: 0 20px 40px -10px rgba(255, 140, 66, 0.3);
+  margin-top: -20px; /* Compensa padding body */
 }
 .hero-content { z-index: 2; position: relative; max-width: 600px; margin: 0 auto; }
 .hero-header h1 { color: white; margin-bottom: 12px; font-size: 2.2rem; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -275,7 +284,7 @@ input:focus, select:focus, textarea:focus {
     position: fixed; top: 0; left: 0; width: 100%; height: var(--mobile-header-height);
     background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     display: flex; align-items: center; justify-content: space-between; padding: 0 24px;
-    z-index: 99; border-bottom: 1px solid rgba(0,0,0,0.05);
+    z-index: var(--z-fixed); border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 .brand-text-mobile { font-family:'Quicksand'; font-size:1.4rem; font-weight:800; color:var(--secondary); letter-spacing: -0.5px; }
 
@@ -285,7 +294,7 @@ input:focus, select:focus, textarea:focus {
   border-radius: 30px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.5);
   display: flex; justify-content: space-around; padding: 12px 20px;
-  z-index: 100; 
+  z-index: var(--z-fixed); 
 }
 .nav-item {
   display: flex; align-items: center; justify-content: center;
@@ -591,15 +600,15 @@ input:focus, select:focus, textarea:focus {
 /* Cart Sidebar */
 .cart-sidebar { 
     position: fixed; top: 0; right: 0; width: 100%; max-width: 400px; height: 100vh;
-    background: white; z-index: 1000; padding: 24px;
+    background: white; z-index: var(--z-modal); padding: 24px;
     box-shadow: -10px 0 50px rgba(0,0,0,0.15);
     transform: translateX(110%); transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
     display: flex; flex-direction: column;
 }
 .cart-sidebar.open { transform: translateX(0); }
 .cart-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px);
-    z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.4s;
+    position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);
+    z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.4s;
 }
 .cart-overlay.open { opacity: 1; pointer-events: auto; }
 
@@ -615,7 +624,7 @@ input:focus, select:focus, textarea:focus {
 .empty-cart { text-align: center; color: #ccc; margin-top: 40px; }
 
 /* =========================================
-   9. ADMIN & KANBAN
+   9. ADMIN & KANBAN (REFINED)
    ========================================= */
 
 .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
@@ -637,14 +646,39 @@ input:focus, select:focus, textarea:focus {
 .kanban-card {
     background: white; border-radius: 16px; padding: 16px; margin-bottom: 12px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.03); border: none; border-left: 4px solid transparent;
-    transition: transform 0.2s;
+    transition: transform 0.2s; position: relative;
 }
 .kanban-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.06); }
 .kanban-card-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
 .kanban-pet-name { font-weight: 700; color: var(--secondary); font-size: 1rem; }
-.kanban-actions { display: flex; gap: 8px; margin-top: 12px; }
-.btn-action-positive { background: #E6FFF5; color: #00B894; border-radius: 8px; font-size: 0.75rem; padding: 4px 10px; font-weight: 700; border:none; cursor: pointer; }
-.btn-action-positive:hover { background: #00B894; color: white; }
+.kanban-client-name { font-size: 0.85rem; color: #888; margin-bottom: 4px;}
+.kanban-service-tag { font-size: 0.75rem; color: var(--primary); font-weight: 600; background: var(--accent); padding: 4px 8px; border-radius: 8px; display: inline-block;}
+.kanban-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+/* Admin Buttons (Refined) */
+.btn-pill-sm {
+    border-radius: var(--radius-pill);
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.btn-action-positive { 
+    background: #E6FFF5; color: #00B894; 
+}
+.btn-action-positive:hover { background: #00B894; color: white; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0, 184, 148, 0.2); }
+
+.kanban-edit-btn { 
+    width: 32px; height: 32px; border-radius: 50%; background: #F8F9FA; 
+    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text-body); font-size: 1rem; transition: all 0.2s;
+}
+.kanban-edit-btn:hover { background: var(--secondary); color: white; transform: rotate(15deg); }
+
 
 /* Calendar Chart Grid */
 .calendar-wrapper { overflow-x: auto; padding-bottom: 10px; }
@@ -653,6 +687,28 @@ input:focus, select:focus, textarea:focus {
 .cal-cell.free { background: rgba(0, 184, 148, 0.1); color: #00B894; cursor: pointer; transition: 0.2s; }
 .cal-cell.free:hover { background: #00B894; color: white; }
 .cal-cell.busy { background: #FFECEC; color: #FF7675; }
+
+/* Modal Styles (Refined) */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+    z-index: var(--z-modal); display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal-content {
+    background: white; width: 90%; max-width: 500px; border-radius: 32px;
+    padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-height: 90vh; overflow-y: auto;
+}
+.modal-overlay.open .modal-content { transform: scale(1); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-close-btn { 
+    width: 36px; height: 36px; border-radius: 50%; background: #F0F2F5; border: none; 
+    font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.modal-close-btn:hover { background: #FF7675; color: white; }
+
 
 /* =========================================
    10. UTILS & ANIMATIONS
@@ -671,7 +727,7 @@ input:focus, select:focus, textarea:focus {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 #toast {
-  position: fixed; top: 20px; right: 20px; z-index: 2000;
+  position: fixed; top: 20px; right: 20px; z-index: var(--z-toast);
   padding: 16px 24px; border-radius: 50px; color: white; font-weight: 600;
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
   transform: translateY(-100px); opacity: 0; transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -701,5 +757,5 @@ input:focus, select:focus, textarea:focus {
   .dashboard-grid { display: grid; grid-template-columns: 350px 1fr; gap: 32px; }
   .diff-grid { grid-template-columns: 1fr 1fr; align-items: center; }
   .mobile-nav { display: none; }
-  .desktop-nav { display: flex; padding: 0 40px; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; }
+  .desktop-nav { display: flex; padding: 0 40px; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: var(--z-fixed); }
 }

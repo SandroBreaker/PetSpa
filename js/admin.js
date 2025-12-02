@@ -1,5 +1,6 @@
 
 
+
 import { supabase } from './supabase.js';
 import { toggleLoading, formatCurrency, formatDate, renderWeeklyCalendar, showToast, toInputDate } from './ui.js';
 import { getAppointmentsForRange, getServices, getAllPets, updateAppointmentFull, getEmployees, createEmployeeRecord, createProduct } from './booking.js';
@@ -259,20 +260,20 @@ function renderKanbanBoard(appointments) {
 function renderKanbanCard(app, columnType) {
     let actions = '';
     
-    // Botões de ação rápida de status
+    // Botões de ação rápida de status (Pill Shape)
     if (columnType === 'pending') {
-        actions = `<button onclick="window.handleStatus('${app.id}', 'confirmed')" class="btn-xs btn-action-positive">Aprovar</button>`;
+        actions = `<button onclick="window.handleStatus('${app.id}', 'confirmed')" class="btn-pill-sm btn-action-positive">Aprovar</button>`;
     } else if (columnType === 'confirmed') {
-        actions = `<button onclick="window.handleStatus('${app.id}', 'in_progress')" class="btn-xs btn-action-positive">Iniciar Banho</button>`;
+        actions = `<button onclick="window.handleStatus('${app.id}', 'in_progress')" class="btn-pill-sm btn-action-positive">Iniciar</button>`;
     } else if (columnType === 'in_progress') {
-        actions = `<button onclick="window.handleStatus('${app.id}', 'completed')" class="btn-xs btn-action-positive">Finalizar</button>`;
+        actions = `<button onclick="window.handleStatus('${app.id}', 'completed')" class="btn-pill-sm btn-action-positive">Finalizar</button>`;
     }
 
     return `
     <div class="kanban-card border-${app.status}">
         <div class="kanban-card-header">
             <div class="kanban-date">${formatDate(app.start_time)}</div>
-            <button class="kanban-edit-btn" onclick="window.openEditModal('${app.id}')">✏️</button>
+            <button class="kanban-edit-btn" onclick="window.openEditModal('${app.id}')" title="Editar">✏️</button>
         </div>
         <div class="kanban-pet-name">${app.pets?.name}</div>
         <div class="kanban-client-name">${app.profiles?.full_name}</div>
