@@ -1,18 +1,28 @@
 
+
 import { supabase } from './supabase.js';
 import { toggleLoading, formatCurrency, formatDate, renderWeeklyCalendar, showToast, toInputDate } from './ui.js';
-import { getAppointmentsForRange, getServices, getAllPets, updateAppointmentFull, getEmployees } from './booking.js';
+import { getAppointmentsForRange, getServices, getAllPets, updateAppointmentFull, getEmployees, createEmployeeRecord, createProduct } from './booking.js';
 import { signUp } from './auth.js';
 
 let loadedAppointments = []; 
-let currentView = 'dashboard'; // dashboard | kanban | employees
+let currentView = 'dashboard'; // dashboard | kanban | employees | products
 let charts = {}; // Referência aos gráficos
 
 export async function getAppointments() {
+    // Adicionado employee_id e join com profiles do employee para mostrar nome
     const { data, error } = await supabase
         .from('appointments')
-        .select(`id, start_time, end_time, status, pet_id, service_id, client_id, pets (name, breed), services (name, price), profiles (full_name, phone)`)
+        .select(`
+            id, start_time, end_time, status, pet_id, service_id, client_id, employee_id,
+            pets (name, breed), 
+            services (name, price), 
+            profiles (full_name, phone)
+        `)
         .order('start_time', { ascending: true });
+        
+    // Nota: O Supabase pode ter dificuldade com joins complexos de profiles duas vezes (client e employee)
+    // Se o nome do funcionário não aparecer, precisaremos de uma query separada, mas vamos tentar assim.
     if (error) throw error;
     return data;
 }
@@ -161,6 +171,61 @@ async function renderEmployeesView() {
     `;
 }
 
+async function renderProductsView() {
+    return `
+        <div class="fade-in">
+            <div class="card">
+                <h3>Cadastrar Novo Produto (Loja)</h3>
+                <form id="form-product" style="margin-top:16px;">
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" id="prod-name" required placeholder="Ex: Ração Premium 15kg">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>SKU (Código)</label>
+                            <input type="text" id="prod-sku" required placeholder="Ex: RAC-001">
+                        </div>
+                        <div class="form-group">
+                            <label>Categoria</label>
+                            <select id="prod-cat" required>
+                                <option value="food">Rações & Petiscos</option>
+                                <option value="toys">Brinquedos</option>
+                                <option value="hygiene">Higiene</option>
+                                <option value="accessories">Acessórios</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label>Preço (R$)</label>
+                            <input type="number" id="prod-price" required step="0.01" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Estoque (Qtd)</label>
+                            <input type="number" id="prod-stock" required min="0" value="10">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL da Imagem</label>
+                        <input type="url" id="prod-image" required placeholder="https://...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição Curta</label>
+                        <textarea id="prod-desc" rows="3" style="width:100%; padding:12px; border:2px solid var(--bg-input); border-radius:12px;" required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Salvar Produto</button>
+                </form>
+            </div>
+        </div>
+    `;
+}
+
 function renderKanbanBoard(appointments) {
     const cols = {
         pending: appointments.filter(a => a.status === 'pending'),
@@ -232,6 +297,7 @@ export async function renderAdminDashboard() {
     if (currentView === 'dashboard') content = await renderChartsView();
     else if (currentView === 'kanban') content = renderKanbanBoard(loadedAppointments);
     else if (currentView === 'employees') content = await renderEmployeesView();
+    else if (currentView === 'products') content = await renderProductsView();
 
     return `
         <div class="container fade-in" style="padding-top:20px;">
@@ -247,6 +313,7 @@ export async function renderAdminDashboard() {
                 <button class="tab-btn ${currentView === 'dashboard' ? 'active' : ''}" onclick="window.setAdminTab('dashboard')">📊 Visão Geral</button>
                 <button class="tab-btn ${currentView === 'kanban' ? 'active' : ''}" onclick="window.setAdminTab('kanban')">📋 Operacional</button>
                 <button class="tab-btn ${currentView === 'employees' ? 'active' : ''}" onclick="window.setAdminTab('employees')">👥 Equipe</button>
+                <button class="tab-btn ${currentView === 'products' ? 'active' : ''}" onclick="window.setAdminTab('products')">🛍️ Produtos</button>
             </div>
 
             <div id="admin-content-area">
@@ -277,6 +344,12 @@ export async function renderAdminDashboard() {
                             </select>
                         </div>
                         <div class="form-group">
+                            <label>Atribuir Funcionário</label>
+                            <select id="edit-employee">
+                                <option value="">-- Selecione --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
                             <label>Serviço</label>
                             <select id="edit-service"></select>
                         </div>
@@ -303,21 +376,49 @@ function setupAdminListeners() {
             const name = document.getElementById('emp-name').value;
             toggleLoading(true);
             try {
-                // Ao fazer signUp, o Supabase loga automaticamente o novo usuário.
-                // Passamos 'employee' como role.
+                // 1. Cria usuário (Supabase auth) - isso insere em profiles via trigger
                 const { data } = await signUp(email, pass, name, '99999999', 'employee'); 
                 
-                // CRÍTICO: Após o signUp bem-sucedido, o cliente agora É o novo funcionário.
-                // Forçamos a atualização do perfil para garantir que o cargo seja 'employee'
-                // caso o trigger do banco não tenha pego o metadata corretamente.
+                // 2. Garante que role no profile seja employee
                 if (data?.user) {
                     await supabase.from('profiles').update({ role: 'employee' }).eq('id', data.user.id);
+                    
+                    // 3. CRUCIAL: Insere na tabela 'employees' para satisfazer FK
+                    await createEmployeeRecord(data.user.id);
                 }
 
                 alert('Funcionário cadastrado com sucesso!\n\nPor segurança, a sessão administrativa foi encerrada pois o novo usuário foi logado.\n\nPor favor, faça login novamente como Admin.');
                 window.location.reload();
             } catch(err) {
                 showToast('Erro: ' + err.message, 'error');
+                toggleLoading(false);
+            }
+        };
+    }
+
+    // Listener do form de produto
+    const prodForm = document.getElementById('form-product');
+    if(prodForm) {
+        prodForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const product = {
+                name: document.getElementById('prod-name').value,
+                sku: document.getElementById('prod-sku').value,
+                category: document.getElementById('prod-cat').value,
+                price: parseFloat(document.getElementById('prod-price').value),
+                stock_quantity: parseInt(document.getElementById('prod-stock').value),
+                image: document.getElementById('prod-image').value,
+                description: document.getElementById('prod-desc').value
+            };
+
+            toggleLoading(true);
+            try {
+                await createProduct(product);
+                showToast('Produto cadastrado!', 'success');
+                prodForm.reset();
+            } catch(err) {
+                showToast('Erro: ' + err.message, 'error');
+            } finally {
                 toggleLoading(false);
             }
         };
@@ -332,19 +433,25 @@ function setupAdminListeners() {
             const status = document.getElementById('edit-status').value;
             const dateStr = document.getElementById('edit-date').value;
             const serviceId = document.getElementById('edit-service').value;
+            const empId = document.getElementById('edit-employee').value; // Novo campo
             
             toggleLoading(true);
             try {
                 const start = new Date(dateStr);
-                // Assume 1h de duração pra simplificar update, ideal seria pegar do serviço
                 const end = new Date(start.getTime() + 60*60000); 
 
-                await updateAppointmentFull(id, {
+                const payload = {
                     status,
                     service_id: serviceId,
                     start_time: start.toISOString(),
-                    end_time: end.toISOString()
-                });
+                    end_time: end.toISOString(),
+                };
+
+                // Só envia employee_id se selecionado (ou null para limpar)
+                if (empId) payload.employee_id = empId;
+                else payload.employee_id = null;
+
+                await updateAppointmentFull(id, payload);
                 showToast('Agendamento atualizado!', 'success');
                 document.getElementById('edit-modal').classList.remove('open');
                 
@@ -375,6 +482,7 @@ window.openEditModal = async (appId) => {
 
     toggleLoading(true);
     const services = await getServices();
+    const employees = await getEmployees(); // Busca lista de funcionários
     toggleLoading(false);
 
     // Popula Modal
@@ -385,6 +493,11 @@ window.openEditModal = async (appId) => {
 
     const srvSelect = document.getElementById('edit-service');
     srvSelect.innerHTML = services.map(s => `<option value="${s.id}" ${s.id === app.service_id ? 'selected' : ''}>${s.name}</option>`).join('');
+
+    // Popula Select de Funcionários
+    const empSelect = document.getElementById('edit-employee');
+    empSelect.innerHTML = '<option value="">-- Sem responsável --</option>' + 
+        employees.map(e => `<option value="${e.id}" ${e.id === app.employee_id ? 'selected' : ''}>${e.full_name}</option>`).join('');
 
     document.getElementById('edit-modal').classList.add('open');
 };

@@ -1,4 +1,5 @@
 
+
 import { supabase } from './supabase.js';
 
 /**
@@ -92,9 +93,6 @@ export async function updateAppointmentFull(id, payload) {
 export async function createAppointment(petId, serviceId, startIso, endIso) {
     const { data: { user } } = await supabase.auth.getUser();
     
-    // Verificação básica de disponibilidade no front-end antes de enviar
-    // Nota: Em produção real, isso deve ser garantido por Trigger/Constraint no banco
-    
     const { error } = await supabase.from('appointments').insert({
         client_id: user.id,
         pet_id: petId,
@@ -136,4 +134,31 @@ export async function getEmployees() {
         .in('role', ['admin', 'employee']);
     if (error) throw error;
     return data || [];
+}
+
+/**
+ * Cria o registro técnico do funcionário na tabela employees
+ * Necessário para satisfazer a Chave Estrangeira
+ */
+export async function createEmployeeRecord(userId) {
+    // Verifica se já existe para não duplicar erro
+    const { data } = await supabase.from('employees').select('id').eq('id', userId).single();
+    if (data) return;
+
+    const { error } = await supabase.from('employees').insert({
+        id: userId,
+        specialties: ['Geral'], // Valor padrão
+        active: true
+    });
+    
+    if (error) console.error('Erro ao criar registro de employees:', error);
+}
+
+/**
+ * Cria um novo Produto no Marketplace (Admin)
+ */
+export async function createProduct(productData) {
+    const { error } = await supabase.from('products').insert(productData);
+    if (error) throw error;
+    return true;
 }
