@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PetSpa - Premium Care</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Petshop Styles -->
+    <link rel="stylesheet" href="styles.css"> 
+    
+    <!-- Dependencies -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF8C42', /* Laranja Premium */
+                        secondary: '#2D3436', /* Carvão */
+                        accent: '#FFF5EB', /* Creme Suave */
+                        surface: '#FFFFFF',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Quicksand', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.98)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' },
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            },
+            corePlugins: {
+               preflight: false,
+            }
+        }
+    </script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+
+    <!-- Header Mobile Fixo -->
+    <div class="mobile-header-bar">
+        <div style="font-family:'Quicksand'; font-size:1.4rem; font-weight:800; color:var(--secondary);">🐾 PetSpa</div>
+        <!-- Botão auxiliar para Chat -->
+        <button class="btn-icon-sm" data-route="chat" style="background:var(--primary-light); color:var(--primary);">
+            <i data-lucide="message-circle"></i>
+        </button>
+    </div>
+
+    <!-- Header Desktop -->
+    <header class="desktop-nav">
+        <div style="font-family:'Quicksand'; font-size:1.6rem; font-weight:800; color:var(--secondary); cursor:pointer;" data-route="home">🐾 PetSpa</div>
+        <nav class="nav-links-desktop" id="desktop-links">
+            <!-- Injetado via JS -->
+        </nav>
+    </header>
+    
+    <!-- Container Principal da Aplicação -->
+    <main id="app">
+        <!-- O conteúdo das views será injetado aqui -->
+    </main>
+
+    <!-- Navegação Mobile (Barra inferior) -->
+    <nav class="mobile-nav" id="mobile-links">
+        <!-- Injetado via JS -->
+    </nav>
+
+    <!-- Toast de Notificação -->
+    <div id="toast" class="hidden"></div>
+
+    <!-- Script Principal -->
+    <script type="module" src="js/app.js"></script>
+    <script>
+        // Init Icons
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
