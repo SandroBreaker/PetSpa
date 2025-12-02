@@ -178,6 +178,7 @@ async function render() {
     switch (state.view) {
         case 'home':
             app.innerHTML = renderHome();
+            setTimeout(initLeafletMap, 100); // Inicializa o mapa após o DOM ser injetado
             break;
         case 'chat':
             app.innerHTML = renderChatView();
@@ -255,6 +256,36 @@ async function getMyAppointments() {
     // Busca TODOS (inclusive cancelados e passados) para histórico
     const { data } = await supabase.from('appointments').select('*, services(*), pets(*)').eq('client_id', state.user.id).order('start_time', {ascending: false});
     return data || [];
+}
+
+// --- Funções de Mapa (Leaflet) ---
+function initLeafletMap() {
+    const mapContainer = document.getElementById('contact-map');
+    if (!mapContainer || mapContainer._leaflet_id) return; // Evita re-inicializar
+
+    // Coordenadas fictícias (Centro de SP para exemplo)
+    const lat = -23.550520;
+    const lng = -46.633308;
+
+    const map = L.map('contact-map').setView([lat, lng], 15);
+
+    // Tiles Gratuitos do OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    }).addTo(map);
+
+    // Ícone Personalizado
+    const pawIcon = L.icon({
+        iconUrl: 'https://cdn-icons-png.flaticon.com/512/1076/1076928.png', // Ícone de pata livre
+        iconSize: [38, 38],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38]
+    });
+
+    L.marker([lat, lng], {icon: pawIcon}).addTo(map)
+        .bindPopup('<b>🐾 PetSpa</b><br>Rua dos Pets Felizes, 123<br>Estacionamento no local.')
+        .openPopup();
 }
 
 // --- Templates ---
@@ -395,11 +426,10 @@ function renderHome() {
                         <i data-lucide="clock"></i> Terça a Sábado: 09h às 18h
                     </div>
                 </div>
-                <div class="contact-map-placeholder">
-                    <div style="text-align:center;">
-                        <i data-lucide="map" size="40" style="opacity:0.5; margin-bottom:10px;"></i>
-                        <p style="color:white; margin:0;">Mapa do Google</p>
-                    </div>
+                
+                <!-- Mapa Interativo (Leaflet) -->
+                <div class="contact-map-placeholder" style="overflow: hidden; padding: 0;">
+                    <div id="contact-map" style="width: 100%; height: 100%; border-radius: var(--radius-sm);"></div>
                 </div>
             </div>
         </div>
