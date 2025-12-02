@@ -1,3 +1,4 @@
+
 import { supabase } from './supabase.js';
 
 /**
@@ -16,6 +17,7 @@ export async function signIn(email, password) {
 /**
  * Realiza o cadastro de novo usuário
  * Envia full_name e phone no metadata para o Trigger do banco criar o perfil
+ * Define emailRedirectTo para garantir retorno à URL correta
  */
 export async function signUp(email, password, fullName, phone) {
     const { data, error } = await supabase.auth.signUp({
@@ -25,7 +27,9 @@ export async function signUp(email, password, fullName, phone) {
             data: {
                 full_name: fullName,
                 phone: phone
-            }
+            },
+            // Garante que o link do email volte para a URL atual (localhost, IP ou domínio real)
+            emailRedirectTo: window.location.origin
         }
     });
 
