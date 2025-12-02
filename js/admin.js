@@ -303,10 +303,18 @@ function setupAdminListeners() {
             const name = document.getElementById('emp-name').value;
             toggleLoading(true);
             try {
-                // SignUp cria user e já loga. Em app real admin usaria API Admin.
-                // Aqui simulamos: cria e avisa.
-                await signUp(email, pass, name, '99999999'); 
-                alert('Funcionário criado com sucesso!\n\nVocê será desconectado para que o login do novo funcionário seja validado. Por favor, entre novamente como Admin.');
+                // Ao fazer signUp, o Supabase loga automaticamente o novo usuário.
+                // Passamos 'employee' como role.
+                const { data } = await signUp(email, pass, name, '99999999', 'employee'); 
+                
+                // CRÍTICO: Após o signUp bem-sucedido, o cliente agora É o novo funcionário.
+                // Forçamos a atualização do perfil para garantir que o cargo seja 'employee'
+                // caso o trigger do banco não tenha pego o metadata corretamente.
+                if (data?.user) {
+                    await supabase.from('profiles').update({ role: 'employee' }).eq('id', data.user.id);
+                }
+
+                alert('Funcionário cadastrado com sucesso!\n\nPor segurança, a sessão administrativa foi encerrada pois o novo usuário foi logado.\n\nPor favor, faça login novamente como Admin.');
                 window.location.reload();
             } catch(err) {
                 showToast('Erro: ' + err.message, 'error');

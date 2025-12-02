@@ -16,17 +16,17 @@ export async function signIn(email, password) {
 
 /**
  * Realiza o cadastro de novo usuário
- * Envia full_name e phone no metadata para o Trigger do banco criar o perfil
- * Define emailRedirectTo para garantir retorno à URL correta
+ * Aceita role opcional (padrão 'client') para permitir criação de funcionários
  */
-export async function signUp(email, password, fullName, phone) {
+export async function signUp(email, password, fullName, phone, role = 'client') {
     const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
             data: {
                 full_name: fullName,
-                phone: phone
+                phone: phone,
+                role: role // Envia o cargo nos metadados
             },
             // Garante que o link do email volte para a URL atual (localhost, IP ou domínio real)
             emailRedirectTo: window.location.origin
