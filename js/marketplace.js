@@ -67,8 +67,8 @@ export function renderMarketplace() {
 
     // HTML Base
     const html = `
-        <div class="container fade-in" style="padding-top:20px;">
-            <div class="market-header">
+        <div class="container" style="padding-top:20px;">
+            <div class="market-header scroll-hidden">
                 <div>
                     <h2>Pet Shop</h2>
                     <p>Mimos e cuidados para levar pra casa.</p>
@@ -80,7 +80,7 @@ export function renderMarketplace() {
             </div>
 
             <!-- Filtros -->
-            <div class="category-filters">
+            <div class="category-filters scroll-hidden delay-100">
                 <button class="filter-btn ${currentCategory === 'all' ? 'active' : ''}" onclick="window.setCategory('all')">Todos</button>
                 <button class="filter-btn ${currentCategory === 'food' ? 'active' : ''}" onclick="window.setCategory('food')">Rações & Petiscos</button>
                 <button class="filter-btn ${currentCategory === 'toys' ? 'active' : ''}" onclick="window.setCategory('toys')">Brinquedos</button>
@@ -90,7 +90,7 @@ export function renderMarketplace() {
 
             <!-- Grid de Produtos -->
             <div class="product-grid">
-                ${filteredProducts.map(product => renderProductCard(product)).join('')}
+                ${filteredProducts.map((product, idx) => renderProductCard(product, idx)).join('')}
             </div>
         </div>
 
@@ -118,9 +118,9 @@ export function renderMarketplace() {
     return html;
 }
 
-function renderProductCard(product) {
+function renderProductCard(product, index) {
     return `
-        <div class="card product-card">
+        <div class="card product-card scroll-hidden" style="transition-delay: ${index * 0.05}s">
             <div class="product-img-wrapper">
                 <img src="${product.image}" alt="${product.name}" class="product-img">
                 <span class="product-cat-badge">${translateCat(product.category)}</span>

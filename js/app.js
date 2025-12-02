@@ -3,7 +3,7 @@ import { supabase } from './supabase.js';
 import { signIn, signUp, signOut } from './auth.js';
 import { getServices, getMyPets, createAppointment, createPet, getAppointmentById, getAppointmentsForRange } from './booking.js';
 import { renderAdminDashboard, updateAppointmentStatus } from './admin.js';
-import { showToast, toggleLoading, formatCurrency, formatDate, renderWeeklyCalendar } from './ui.js';
+import { showToast, toggleLoading, formatCurrency, formatDate, renderWeeklyCalendar, initScrollAnimations } from './ui.js';
 import { renderChatView, initChat } from './chat.js';
 import { renderMarketplace } from './marketplace.js';
 
@@ -170,6 +170,11 @@ async function render() {
     } else {
         document.body.classList.remove('mode-chat');
     }
+    
+    // Adiciona classe de animação de entrada da página
+    app.classList.remove('page-fade-in');
+    void app.offsetWidth; // Trigger reflow
+    app.classList.add('page-fade-in');
 
     // Proteção de Rota
     if (['dashboard', 'new-pet', 'tracker', 'profile'].includes(state.view) && !state.user) return navigateTo('login');
@@ -178,7 +183,7 @@ async function render() {
     switch (state.view) {
         case 'home':
             app.innerHTML = renderHome();
-            setTimeout(initLeafletMap, 100); // Inicializa o mapa após o DOM ser injetado
+            setTimeout(initLeafletMap, 100); 
             break;
         case 'chat':
             app.innerHTML = renderChatView();
@@ -190,7 +195,7 @@ async function render() {
             app.innerHTML = renderServicesList(state.services);
             toggleLoading(false);
             break;
-        case 'marketplace': // Nova Rota
+        case 'marketplace': 
             app.innerHTML = renderMarketplace();
             break;
         case 'login':
@@ -248,7 +253,9 @@ async function render() {
             app.innerHTML = await renderAdminDashboard();
             break;
     }
+    
     lucide.createIcons();
+    initScrollAnimations(); // Inicia o observer para animações on-scroll
 }
 
 async function getMyAppointments() {
@@ -288,12 +295,12 @@ function initLeafletMap() {
         .openPopup();
 }
 
-// --- Templates ---
+// --- Templates (Atualizados com classes de animação) ---
 
 function renderHome() {
     return `
         <!-- 1. Hero Section -->
-        <header class="hero-header fade-in">
+        <header class="hero-header scroll-hidden">
             <div class="hero-content">
                 <h1>Seu pet limpo,<br>feliz e saudável!</h1>
                 <p>Confiança, carinho e tecnologia. Agendamento inteligente com IA e profissionais apaixonados pelo que fazem.</p>
@@ -307,27 +314,27 @@ function renderHome() {
             <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=800&q=80" class="hero-bg-decoration" alt="Dog">
         </header>
         
-        <div class="container fade-in" style="animation-delay: 0.1s;">
+        <div class="container" style="animation-delay: 0.1s;">
             
             <!-- 2. Services Preview -->
-            <h2 class="section-title">Nossos Cuidados</h2>
+            <h2 class="section-title scroll-hidden">Nossos Cuidados</h2>
             <div class="services-preview-grid">
-                <div class="service-preview-card">
+                <div class="service-preview-card scroll-hidden delay-100">
                     <div class="service-preview-icon"><i data-lucide="scissors" size="32"></i></div>
                     <h4>Banho & Tosa</h4>
                     <p>Completo e relaxante</p>
                 </div>
-                <div class="service-preview-card">
+                <div class="service-preview-card scroll-hidden delay-200">
                     <div class="service-preview-icon"><i data-lucide="droplet" size="32"></i></div>
                     <h4>Hidratação</h4>
                     <p>Pelos macios e brilhantes</p>
                 </div>
-                <div class="service-preview-card">
+                <div class="service-preview-card scroll-hidden delay-300">
                     <div class="service-preview-icon"><i data-lucide="sparkles" size="32"></i></div>
                     <h4>Higiene</h4>
                     <p>Unhas e ouvidos limpos</p>
                 </div>
-                <div class="service-preview-card">
+                <div class="service-preview-card scroll-hidden delay-100">
                     <div class="service-preview-icon"><i data-lucide="heart" size="32"></i></div>
                     <h4>Carinho Extra</h4>
                     <p>Equipe apaixonada</p>
@@ -335,7 +342,7 @@ function renderHome() {
             </div>
 
             <!-- 3. Differentials -->
-            <div class="differentials-section">
+            <div class="differentials-section scroll-hidden">
                 <div class="card diff-grid">
                     <div class="diff-text">
                         <h2 style="margin-bottom:24px;">Por que escolher a PetSpa?</h2>
@@ -377,9 +384,9 @@ function renderHome() {
             </div>
 
             <!-- 4. Testimonials -->
-            <h2 class="section-title">Quem ama, recomenda</h2>
+            <h2 class="section-title scroll-hidden">Quem ama, recomenda</h2>
             <div class="testimonials-grid">
-                <div class="testimonial-card">
+                <div class="testimonial-card scroll-hidden delay-100">
                     <div class="quote-icon">“</div>
                     <p class="testimonial-text">Meu Thor sai sempre cheiroso e feliz! O atendimento é maravilhoso e me sinto segura em deixá-lo.</p>
                     <div class="testimonial-author">
@@ -390,7 +397,7 @@ function renderHome() {
                         </div>
                     </div>
                 </div>
-                 <div class="testimonial-card">
+                 <div class="testimonial-card scroll-hidden delay-200">
                     <div class="quote-icon">“</div>
                     <p class="testimonial-text">A facilidade de agendar pela IA é incrível. E o banho dura muito, a Paçoca volta parecendo uma princesa.</p>
                     <div class="testimonial-author">
@@ -404,16 +411,16 @@ function renderHome() {
             </div>
 
             <!-- 5. Gallery (Happy Pets) -->
-            <h2 class="section-title">Clientes de Quatro Patas</h2>
-            <p class="section-subtitle">Veja a alegria dos pets após um dia de spa!</p>
+            <h2 class="section-title scroll-hidden">Clientes de Quatro Patas</h2>
+            <p class="section-subtitle scroll-hidden">Veja a alegria dos pets após um dia de spa!</p>
             <div class="gallery-grid">
-                <img src="https://images.unsplash.com/photo-1591856331906-8c9035252814?auto=format&fit=crop&w=400&q=80" class="gallery-img" alt="Pet 1">
-                <img src="https://images.unsplash.com/photo-1598133894008-61f7fdb8cc3a?auto=format&fit=crop&w=400&q=80" class="gallery-img" alt="Pet 2">
-                <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80" class="gallery-img" alt="Pet 3">
+                <img src="https://images.unsplash.com/photo-1591856331906-8c9035252814?auto=format&fit=crop&w=400&q=80" class="gallery-img scroll-hidden delay-100" alt="Pet 1">
+                <img src="https://images.unsplash.com/photo-1598133894008-61f7fdb8cc3a?auto=format&fit=crop&w=400&q=80" class="gallery-img scroll-hidden delay-200" alt="Pet 2">
+                <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80" class="gallery-img scroll-hidden delay-300" alt="Pet 3">
             </div>
 
             <!-- 6. Contact Footer -->
-            <div class="contact-section">
+            <div class="contact-section scroll-hidden">
                 <h2>Venha nos visitar!</h2>
                 <div class="contact-info-grid">
                     <div class="contact-item">
@@ -438,10 +445,10 @@ function renderHome() {
 
 function renderServicesList(services) {
     return `
-        <div class="container fade-in" style="padding-top:20px;">
-            <h2 style="margin-bottom:24px;">Menu de Serviços</h2>
-            ${services.map(s => `
-                <div class="card service-card service-card-inner">
+        <div class="container" style="padding-top:20px;">
+            <h2 style="margin-bottom:24px;" class="scroll-hidden">Menu de Serviços</h2>
+            ${services.map((s, idx) => `
+                <div class="card service-card service-card-inner scroll-hidden" style="transition-delay: ${idx * 0.1}s">
                     <div class="service-info">
                         <h3 class="service-title">${s.name}</h3>
                         <p class="service-desc">${s.description || 'Cuidado completo para seu pet.'}</p>
@@ -461,8 +468,8 @@ function renderServicesList(services) {
 
 function renderLogin() {
     return `
-        <div class="container auth-container fade-in">
-            <div class="card auth-card">
+        <div class="container auth-container">
+            <div class="card auth-card scroll-hidden">
                 <div class="auth-header">
                     <h1 class="auth-title">Bem-vindo</h1>
                     <p>Acesse para agendar o spa do seu pet</p>
@@ -488,8 +495,8 @@ function renderLogin() {
 
 function renderRegister() {
     return `
-        <div class="container auth-container fade-in">
-            <div class="card auth-card">
+        <div class="container auth-container">
+            <div class="card auth-card scroll-hidden">
                 <h2 class="auth-title auth-header">Criar Conta</h2>
                 <form id="register-form">
                     <div class="form-group">
@@ -529,9 +536,9 @@ function renderDashboard(profile, pets, services, appointments, globalApps) {
     const nextApp = activeAppointments.length > 0 ? activeAppointments[0] : null;
 
     return `
-        <div class="container fade-in dashboard-grid" style="padding-top:24px;">
+        <div class="container dashboard-grid" style="padding-top:24px;">
             <div>
-                <div class="card dashboard-header-card">
+                <div class="card dashboard-header-card scroll-hidden">
                     <div class="dashboard-welcome">
                         <h3>Olá, ${profile?.full_name?.split(' ')[0] || 'Cliente'}!</h3>
                         <p>Seu painel de controle.</p>
@@ -540,7 +547,7 @@ function renderDashboard(profile, pets, services, appointments, globalApps) {
                 </div>
 
                 ${nextApp ? `
-                    <div class="card next-app-card">
+                    <div class="card next-app-card scroll-hidden delay-100">
                         <div class="next-app-header">
                             <div>
                                 <h3 class="next-app-label">Próximo</h3>
@@ -555,17 +562,17 @@ function renderDashboard(profile, pets, services, appointments, globalApps) {
                     </div>
                 ` : ''}
 
-                <div class="pet-section-header">
+                <div class="pet-section-header scroll-hidden delay-100">
                      <h3>Meus Pets</h3>
                 </div>
 
                 ${pets.length === 0 
-                    ? `<div class="card empty-pets">
+                    ? `<div class="card empty-pets scroll-hidden">
                          <div class="empty-pets-icon"><i data-lucide="dog"></i></div>
                          <p>Nenhum pet cadastrado.</p>
                          <button class="btn btn-primary" data-route="new-pet">Cadastrar Pet</button>
                        </div>` 
-                    : `<div class="pet-grid">
+                    : `<div class="pet-grid scroll-hidden delay-100">
                         ${pets.map(p => `
                             <div class="card pet-card">
                                 <div class="pet-icon">🐾</div>
@@ -584,7 +591,7 @@ function renderDashboard(profile, pets, services, appointments, globalApps) {
 
             ${pets.length > 0 ? `
             <div>
-                <div class="card">
+                <div class="card scroll-hidden delay-200">
                     <h3 style="margin-bottom:24px;">Novo Agendamento</h3>
                     <form id="booking-form">
                         <div class="form-group">
@@ -612,7 +619,7 @@ function renderDashboard(profile, pets, services, appointments, globalApps) {
                     </form>
                 </div>
 
-                <div class="card">
+                <div class="card scroll-hidden delay-300">
                     <h3 style="margin-bottom:16px;">Disponibilidade</h3>
                     ${renderWeeklyCalendar(globalApps, true)}
                 </div>
@@ -637,8 +644,8 @@ function renderUserProfile(profile, appointments) {
     const favService = Object.keys(servicesCount).reduce((a, b) => servicesCount[a] > servicesCount[b] ? a : b, 'Nenhum');
 
     return `
-        <div class="container fade-in" style="padding-top:20px;">
-             <div class="profile-header">
+        <div class="container" style="padding-top:20px;">
+             <div class="profile-header scroll-hidden">
                 <div class="profile-avatar">${profile.full_name.charAt(0)}</div>
                 <div class="profile-info">
                     <h2 style="color:white;">${profile.full_name}</h2>
@@ -648,17 +655,17 @@ function renderUserProfile(profile, appointments) {
              </div>
 
              <div class="stat-grid">
-                <div class="stat-card">
+                <div class="stat-card scroll-hidden delay-100">
                     <div class="stat-value">${completedCount}</div>
                     <div class="stat-label">Banhos Realizados</div>
                 </div>
-                <div class="stat-card">
+                <div class="stat-card scroll-hidden delay-200">
                     <div class="stat-value" style="font-size:1.4rem;">${formatCurrency(totalSpent)}</div>
                     <div class="stat-label">Investido em Carinho</div>
                 </div>
              </div>
 
-             <div class="card">
+             <div class="card scroll-hidden delay-300">
                 <h3>Histórico Completo</h3>
                 ${appointments.length === 0 ? '<p>Sem histórico ainda.</p>' : `
                     <div class="history-list">
@@ -684,24 +691,25 @@ function renderTrackerList(appointments) {
     const sorted = [...appointments].sort((a,b) => new Date(b.start_time) - new Date(a.start_time));
 
     return `
-        <div class="container fade-in" style="padding-top:24px;">
-            <div class="tracker-header">
+        <div class="container" style="padding-top:24px;">
+            <div class="tracker-header scroll-hidden">
                 <button class="btn btn-ghost" style="width:auto; height:48px;" data-route="dashboard">← Voltar</button>
                 <h2>Meus Agendamentos</h2>
                 <div style="width:40px;"></div>
             </div>
 
             ${sorted.length === 0 ? `
-                <div class="card text-center" style="padding:60px;">
+                <div class="card text-center scroll-hidden" style="padding:60px;">
                     <p>Você ainda não tem agendamentos.</p>
                     <button class="btn btn-primary" data-route="dashboard" style="max-width:200px; margin:0 auto;">Agendar Agora</button>
                 </div>
-            ` : sorted.map(app => {
+            ` : sorted.map((app, idx) => {
                 const label = getStatusLabel(app.status);
                 const isClickable = app.status !== 'cancelled';
                 
                 return `
-                <div class="card tracker-card border-${app.status} ${isClickable ? 'clickable' : 'default'}" 
+                <div class="card tracker-card border-${app.status} ${isClickable ? 'clickable' : 'default'} scroll-hidden" 
+                     style="transition-delay: ${idx * 0.1}s"
                      ${isClickable ? `data-route="tracker" data-param="${app.id}"` : ''}
                 >
                     <div class="tracker-info">
@@ -743,12 +751,12 @@ function renderTrackerDetail(appointment) {
     ];
 
     return `
-        <div class="container fade-in" style="padding-top:24px;">
-            <div class="tracker-detail-header">
+        <div class="container" style="padding-top:24px;">
+            <div class="tracker-detail-header scroll-hidden">
                 <button class="btn btn-ghost" style="width:auto;" data-route="tracker">← Voltar</button>
             </div>
             
-            <div class="card status-card">
+            <div class="card status-card scroll-hidden">
                 <div class="status-icon-lg">
                     <i data-lucide="dog"></i>
                 </div>
@@ -762,7 +770,7 @@ function renderTrackerDetail(appointment) {
             </div>
 
             ${appointment.status !== 'cancelled' ? `
-            <div class="tracker-container">
+            <div class="tracker-container scroll-hidden delay-100">
                 <div class="progress-track">
                     ${steps.map((step, idx) => {
                         let statusClass = '';
@@ -781,7 +789,7 @@ function renderTrackerDetail(appointment) {
                 </div>
             </div>
 
-            <div class="card message-card">
+            <div class="card message-card scroll-hidden delay-200">
                 <strong class="message-label">Mensagem</strong>
                 <p class="message-text">
                     ${stepIndex === 0 ? 'Aguardando confirmação da equipe.' : ''}
@@ -797,9 +805,9 @@ function renderTrackerDetail(appointment) {
 
 function renderPetForm() {
     return `
-        <div class="container fade-in" style="padding-top:24px;">
-            <h2 style="margin-bottom:24px;">Adicionar Novo Pet</h2>
-            <div class="card">
+        <div class="container" style="padding-top:24px;">
+            <h2 style="margin-bottom:24px;" class="scroll-hidden">Adicionar Novo Pet</h2>
+            <div class="card scroll-hidden delay-100">
                 <form id="pet-form">
                     <div class="form-group">
                         <label>Nome do Pet</label>
@@ -903,6 +911,7 @@ window.handleStatus = async (id, status) => {
         await updateAppointmentStatus(id, status);
         showToast('Status atualizado', 'success');
         document.getElementById('app').innerHTML = await renderAdminDashboard();
+        initScrollAnimations();
     } catch(err) { 
         console.error(err);
         if (err.message?.includes('appointments_status_check') || err.code === '23514') {
