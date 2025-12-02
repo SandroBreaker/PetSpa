@@ -29,6 +29,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupRouter() {
     document.body.addEventListener('click', (e) => {
         const target = e.target.closest('[data-route]');
+        // Lógica para fechar o balão flutuante
+        if(e.target.closest('.bot-invite-close')) {
+            const bubble = document.querySelector('.bot-invite-wrapper');
+            if(bubble) bubble.style.display = 'none';
+            return;
+        }
+
         if (target) {
             e.preventDefault();
             const route = target.dataset.route;
@@ -307,14 +314,33 @@ function renderHome() {
                 <p>Confiança, carinho e tecnologia. Agendamento inteligente com IA e profissionais apaixonados pelo que fazem.</p>
                 <div class="hero-actions">
                     <button class="btn btn-primary hero-btn" data-route="${state.user ? 'dashboard' : 'login'}">Agendar Banho</button>
+                    <!-- Ajuste: Ícone de Cachorro + Sparkles para IA -->
                     <button class="btn btn-ghost hero-btn-outline" data-route="chat">
-                        <i data-lucide="bot" style="width:20px;height:20px;"></i> Falar com Assistente
+                        <i data-lucide="dog"></i>
+                        <i data-lucide="sparkles" style="width:16px; margin-left:-6px; margin-bottom:8px;"></i> 
+                        Falar com Assistente
                     </button>
                 </div>
             </div>
             <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=800&q=80" class="hero-bg-decoration" alt="Dog">
         </header>
         
+        <!-- Balão Flutuante de Convite do Bot -->
+        <div class="bot-invite-wrapper" data-route="chat">
+            <div class="bot-invite-bubble">
+                <button class="bot-invite-close">✕</button>
+                <span style="font-size:1.5rem;">🤖</span>
+                <div>
+                    <strong>Psiu! Alguma dúvida?</strong>
+                    <br>Posso ajudar com dicas e agendamento!
+                </div>
+            </div>
+            <!-- Avatar Flutuante (Desktop only visual) -->
+            <div class="bot-floating-avatar">
+                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot">
+            </div>
+        </div>
+
         <div class="container" style="animation-delay: 0.1s;">
             
             <!-- 2. Services Preview -->
