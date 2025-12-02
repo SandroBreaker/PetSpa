@@ -1,4 +1,5 @@
 
+
 import { supabase } from './supabase.js';
 import { signIn, signUp, signOut } from './auth.js';
 import { getServices, getMyPets, createAppointment, createPet, getAppointmentById, getAppointmentsForRange } from './booking.js';
@@ -200,11 +201,11 @@ async function render() {
             break;
         case 'login':
             app.innerHTML = renderLogin();
-            bindAuthForm('login-form', handleLoginSubmit);
+            bindLoginEvents(); // Vinculo específico
             break;
         case 'register':
             app.innerHTML = renderRegister();
-            bindAuthForm('register-form', handleRegisterSubmit);
+            bindRegisterEvents(); // Vinculo específico
             break;
         case 'dashboard':
             toggleLoading(true);
@@ -840,16 +841,33 @@ function getStatusLabel(status) {
 
 // --- Event Binders ---
 
-function bindAuthForm(formId, handler) {
-    const form = document.getElementById(formId);
-    if (!form) return;
+// Ligação manual dos formulários de login e registro
+function bindLoginEvents() {
+    const form = document.getElementById('login-form');
+    if(!form) return;
     form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const inputs = Array.from(form.elements).filter(el => el.tagName !== 'BUTTON');
-        const values = inputs.map(i => i.value);
-        handler(...values);
+        const email = document.getElementById('email').value.trim();
+        const pass = document.getElementById('password').value;
+        handleLoginSubmit(email, pass);
     });
 }
+
+function bindRegisterEvents() {
+    const form = document.getElementById('register-form');
+    if(!form) return;
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        // Mapeia os inputs pelos IDs corretos para garantir a ordem dos argumentos
+        const name = document.getElementById('reg-name').value;
+        const phone = document.getElementById('reg-phone').value;
+        const email = document.getElementById('reg-email').value.trim(); // Trim remove espaços acidentais
+        const pass = document.getElementById('reg-password').value;
+        
+        handleRegisterSubmit(email, pass, name, phone);
+    });
+}
+
 
 function bindPetForm() {
     const form = document.getElementById('pet-form');
