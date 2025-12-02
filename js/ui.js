@@ -24,22 +24,9 @@ export function toggleLoading(isLoading, containerId = 'app') {
         // Salva o conteúdo atual se necessário ou apenas sobrepõe
         const loader = document.createElement('div');
         loader.id = 'loader-overlay';
-        loader.style.cssText = `
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.8); z-index: 50; display: flex;
-            align-items: center; justify-content: center; backdrop-filter: blur(4px);
-            border-radius: var(--radius-md);
-        `;
-        loader.innerHTML = '<div class="spinner" style="width:40px; height:40px; border:4px solid var(--primary-light); border-top-color:var(--primary); border-radius:50%; animation: spin 1s linear infinite;"></div>';
+        loader.className = 'loader-overlay';
+        loader.innerHTML = '<div class="spinner"></div>';
         
-        // Add keyframes via JS for simplicity
-        if(!document.getElementById('spin-style')) {
-            const style = document.createElement('style');
-            style.id = 'spin-style';
-            style.innerHTML = '@keyframes spin { 100% { transform: rotate(360deg); } }';
-            document.head.appendChild(style);
-        }
-
         container.style.position = 'relative';
         container.appendChild(loader);
     } else {
@@ -94,11 +81,11 @@ export function renderWeeklyCalendar(appointments, isPrivate = true) {
     let html = `
     <div class="calendar-wrapper">
         <div class="calendar-grid">
-            <div class="cal-header-corner" style="display:flex; align-items:center; justify-content:center; color:var(--text-light);">🕒</div>
+            <div class="cal-header-corner">🕒</div>
             ${calendarDays.map(d => `
                 <div class="cal-header-day">
-                    <div style="font-weight:800; font-size:0.85rem;">${d.toLocaleDateString('pt-BR', {weekday: 'short'}).toUpperCase()}</div>
-                    <div style="font-size:0.75rem; color:var(--text-body);">${d.getDate()}/${d.getMonth()+1}</div>
+                    <div class="cal-day-label">${d.toLocaleDateString('pt-BR', {weekday: 'short'}).toUpperCase()}</div>
+                    <div class="cal-date-label">${d.getDate()}/${d.getMonth()+1}</div>
                 </div>
             `).join('')}
             
@@ -135,9 +122,9 @@ export function renderWeeklyCalendar(appointments, isPrivate = true) {
                 return rowHtml;
             }).join('')}
         </div>
-        <div style="margin-top:16px; display:flex; gap:24px; font-size:0.8rem; justify-content:center; color:var(--text-body); font-weight:600;">
-             <div style="display:flex; align-items:center; gap:6px;"><span style="width:12px; height:12px; background:#F0FFF4; border:1px solid #B8E9D6; border-radius:3px;"></span> Livre</div>
-             <div style="display:flex; align-items:center; gap:6px;"><span style="width:12px; height:12px; background:var(--bg-input); border-radius:3px;"></span> Ocupado</div>
+        <div class="cal-legend">
+             <div class="cal-legend-item"><span class="cal-legend-dot dot-free"></span> Livre</div>
+             <div class="cal-legend-item"><span class="cal-legend-dot dot-busy"></span> Ocupado</div>
         </div>
     </div>`;
 

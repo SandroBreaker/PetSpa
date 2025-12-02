@@ -5,6 +5,7 @@ import { getServices, getMyPets, createAppointment, createPet, getAppointmentByI
 import { renderAdminDashboard, updateAppointmentStatus } from './admin.js';
 import { showToast, toggleLoading, formatCurrency, formatDate, renderWeeklyCalendar } from './ui.js';
 import { renderChatView, initChat } from './chat.js';
+import { renderMarketplace } from './marketplace.js';
 
 // --- Estado Global ---
 const state = {
@@ -72,9 +73,10 @@ function updateNavStructure() {
     
     const isActive = (r) => state.view === r ? 'active' : '';
 
-    // Mobile Links (Minimalista: Apenas ícones)
+    // Mobile Links
     const homeItem = `<a href="#" data-route="home" class="nav-item ${isActive('home')}"><span class="icon"><i data-lucide="home"></i></span></a>`;
     const servicesItem = `<a href="#" data-route="services" class="nav-item ${isActive('services')}"><span class="icon"><i data-lucide="sparkles"></i></span></a>`;
+    const marketItem = `<a href="#" data-route="marketplace" class="nav-item ${isActive('marketplace')}"><span class="icon"><i data-lucide="shopping-bag"></i></span></a>`; // Novo item
     const chatItem = `<a href="#" data-route="chat" class="nav-item ${isActive('chat')}"><span class="icon"><i data-lucide="message-circle"></i></span></a>`;
     
     let userItems = '';
@@ -92,20 +94,21 @@ function updateNavStructure() {
     }
 
     if (mobileNav) {
-        mobileNav.innerHTML = homeItem + servicesItem + chatItem + userItems;
+        mobileNav.innerHTML = homeItem + servicesItem + marketItem + chatItem + userItems;
         lucide.createIcons();
     }
 
     // Desktop Links
     if (desktopNav) {
         desktopNav.innerHTML = `
-            <a href="#" data-route="home" class="${isActive('home')}">Início</a>
-            <a href="#" data-route="services" class="${isActive('services')}">Serviços</a>
-            <a href="#" data-route="chat" class="${isActive('chat')}" style="color:var(--primary);">Assistente IA</a>
+            <a href="#" data-route="home" class="nav-link-item ${isActive('home')}">Início</a>
+            <a href="#" data-route="services" class="nav-link-item ${isActive('services')}">Serviços</a>
+            <a href="#" data-route="marketplace" class="nav-link-item ${isActive('marketplace')}">Loja</a>
+            <a href="#" data-route="chat" class="nav-link-item nav-link-cta ${isActive('chat')}">Assistente IA</a>
             ${state.user 
                 ? `<a href="#" data-route="dashboard" class="btn btn-primary btn-sm">Minha Agenda</a> 
                    <a href="#" data-route="profile" class="btn btn-ghost btn-sm" style="border:none;">Meu Perfil</a>
-                   <a href="#" id="logout-desk" style="margin-left:10px; font-size:0.9rem;">Sair</a>` 
+                   <a href="#" id="logout-desk" class="logout-link">Sair</a>` 
                 : `<a href="#" data-route="login" class="btn btn-secondary btn-sm">Login / Cadastro</a>`
             }
         `;
@@ -186,6 +189,9 @@ async function render() {
             app.innerHTML = renderServicesList(state.services);
             toggleLoading(false);
             break;
+        case 'marketplace': // Nova Rota
+            app.innerHTML = renderMarketplace();
+            break;
         case 'login':
             app.innerHTML = renderLogin();
             bindAuthForm('login-form', handleLoginSubmit);
@@ -254,54 +260,147 @@ async function getMyAppointments() {
 // --- Templates ---
 
 function renderHome() {
-    const portfolio = [
-        { name: 'Paçoca', breed: 'Caramelo', img: 'https://images.unsplash.com/photo-1593134257782-e89567b7718a?auto=format&fit=crop&w=400&q=80', quote: 'A água estava na temperatura ideal, nem precisei tremer de frio!' },
-        { name: 'Luna', breed: 'Husky', img: 'https://images.unsplash.com/photo-1547407139-3c921a66005c?auto=format&fit=crop&w=400&q=80', quote: 'Finalmente um lugar que sabe lidar com meu drama na hora de cortar as unhas.' },
-        { name: 'Thor', breed: 'Bulldog', img: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=400&q=80', quote: 'O shampoo tem cheiro de vitória. Aprovado.' },
-    ];
-
     return `
+        <!-- 1. Hero Section -->
         <header class="hero-header fade-in">
-            <div style="z-index:2; position:relative;">
-                <h1>Cuidado Premium<br>para seu Melhor Amigo</h1>
-                <p>Experiência de spa completa. Agende banho, tosa e cuidados especiais em segundos.</p>
-                <div style="display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:32px;">
-                    <button class="btn btn-primary" style="width:auto;" data-route="${state.user ? 'dashboard' : 'login'}">Agendar Agora</button>
-                    <button class="btn btn-ghost" style="width:auto; border-color:white; color:white;" data-route="chat">Falar com Assistente</button>
+            <div class="hero-content">
+                <h1>Seu pet limpo,<br>feliz e saudável!</h1>
+                <p>Confiança, carinho e tecnologia. Agendamento inteligente com IA e profissionais apaixonados pelo que fazem.</p>
+                <div class="hero-actions">
+                    <button class="btn btn-primary hero-btn" data-route="${state.user ? 'dashboard' : 'login'}">Agendar Banho</button>
+                    <button class="btn btn-ghost hero-btn-outline" data-route="chat">
+                        <i data-lucide="bot" style="width:20px;height:20px;"></i> Falar com Assistente
+                    </button>
                 </div>
             </div>
-            <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=800&q=80" style="position:absolute; right:-100px; bottom:-50px; height:120%; opacity:0.2; transform:rotate(-10deg); pointer-events:none;" alt="Dog">
+            <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=800&q=80" class="hero-bg-decoration" alt="Dog">
         </header>
         
         <div class="container fade-in" style="animation-delay: 0.1s;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:48px;">
-                <div class="card" style="display:flex; align-items:center; gap:20px; background:var(--primary-light); border:none;">
-                    <div style="background:white; padding:16px; border-radius:50%; color:var(--primary);"><i data-lucide="bath" size="32"></i></div>
-                    <div>
-                        <strong style="color:var(--primary); font-size:1.1rem;">Banho Relaxante</strong>
-                        <p style="margin:0; font-size:0.9rem; color:var(--primary-hover);">Produtos naturais e água ozonizada.</p>
-                    </div>
+            
+            <!-- 2. Services Preview -->
+            <h2 class="section-title">Nossos Cuidados</h2>
+            <div class="services-preview-grid">
+                <div class="service-preview-card">
+                    <div class="service-preview-icon"><i data-lucide="scissors" size="32"></i></div>
+                    <h4>Banho & Tosa</h4>
+                    <p>Completo e relaxante</p>
                 </div>
-                <div class="card" style="display:flex; align-items:center; gap:20px; background:var(--bg-card);">
-                    <div style="background:var(--bg-input); padding:16px; border-radius:50%; color:var(--secondary);"><i data-lucide="bot" size="32"></i></div>
-                    <div>
-                        <strong style="color:var(--secondary); font-size:1.1rem;">Assistente IA</strong>
-                        <p style="margin:0; font-size:0.9rem;">Tire dúvidas sobre raças e cuidados.</p>
+                <div class="service-preview-card">
+                    <div class="service-preview-icon"><i data-lucide="droplet" size="32"></i></div>
+                    <h4>Hidratação</h4>
+                    <p>Pelos macios e brilhantes</p>
+                </div>
+                <div class="service-preview-card">
+                    <div class="service-preview-icon"><i data-lucide="sparkles" size="32"></i></div>
+                    <h4>Higiene</h4>
+                    <p>Unhas e ouvidos limpos</p>
+                </div>
+                <div class="service-preview-card">
+                    <div class="service-preview-icon"><i data-lucide="heart" size="32"></i></div>
+                    <h4>Carinho Extra</h4>
+                    <p>Equipe apaixonada</p>
+                </div>
+            </div>
+
+            <!-- 3. Differentials -->
+            <div class="differentials-section">
+                <div class="card diff-grid">
+                    <div class="diff-text">
+                        <h2 style="margin-bottom:24px;">Por que escolher a PetSpa?</h2>
+                        <ul class="diff-list">
+                            <li class="diff-item">
+                                <i data-lucide="check-circle" class="diff-check"></i>
+                                <div class="diff-content">
+                                    <h4>Profissionais Especializados</h4>
+                                    <p>Equipe treinada constantemente para o bem-estar animal.</p>
+                                </div>
+                            </li>
+                            <li class="diff-item">
+                                <i data-lucide="check-circle" class="diff-check"></i>
+                                <div class="diff-content">
+                                    <h4>Produtos Hipoalergênicos</h4>
+                                    <p>Shampoos e condicionadores de alta qualidade e seguros.</p>
+                                </div>
+                            </li>
+                            <li class="diff-item">
+                                <i data-lucide="check-circle" class="diff-check"></i>
+                                <div class="diff-content">
+                                    <h4>Ambiente Climatizado</h4>
+                                    <p>Conforto térmico e segurança total durante o banho.</p>
+                                </div>
+                            </li>
+                             <li class="diff-item">
+                                <i data-lucide="check-circle" class="diff-check"></i>
+                                <div class="diff-content">
+                                    <h4>Agendamento Inteligente</h4>
+                                    <p>Use nossa IA para marcar horários sem fila de espera.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="diff-img-wrapper">
+                        <img src="https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=600&q=80" style="width:100%; border-radius:16px; object-fit:cover; height:100%;" alt="Happy Dog">
                     </div>
                 </div>
             </div>
 
-            <h3 style="margin-bottom:24px;">Quem já passou por aqui</h3>
-            <div class="portfolio-grid">
-                ${portfolio.map(p => `
-                    <div class="portfolio-item">
-                        <img src="${p.img}" alt="${p.name}" class="portfolio-img">
-                        <div class="portfolio-quote">
-                            <p>“${p.quote}”</p>
-                            <strong>— ${p.name}, ${p.breed}</strong>
+            <!-- 4. Testimonials -->
+            <h2 class="section-title">Quem ama, recomenda</h2>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="quote-icon">“</div>
+                    <p class="testimonial-text">Meu Thor sai sempre cheiroso e feliz! O atendimento é maravilhoso e me sinto segura em deixá-lo.</p>
+                    <div class="testimonial-author">
+                        <img src="https://randomuser.me/api/portraits/women/44.jpg" class="testimonial-avatar">
+                        <div>
+                            <strong>Ana Souza</strong>
+                            <div style="font-size:0.8rem; color:var(--text-light);">Tutora do Thor</div>
                         </div>
                     </div>
-                `).join('')}
+                </div>
+                 <div class="testimonial-card">
+                    <div class="quote-icon">“</div>
+                    <p class="testimonial-text">A facilidade de agendar pela IA é incrível. E o banho dura muito, a Paçoca volta parecendo uma princesa.</p>
+                    <div class="testimonial-author">
+                        <img src="https://randomuser.me/api/portraits/men/32.jpg" class="testimonial-avatar">
+                        <div>
+                            <strong>Carlos Lima</strong>
+                            <div style="font-size:0.8rem; color:var(--text-light);">Tutor da Paçoca</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Gallery (Happy Pets) -->
+            <h2 class="section-title">Clientes de Quatro Patas</h2>
+            <p class="section-subtitle">Veja a alegria dos pets após um dia de spa!</p>
+            <div class="gallery-grid">
+                <img src="https://images.unsplash.com/photo-1591856331906-8c9035252814?auto=format&fit=crop&w=400&q=80" class="gallery-img" alt="Pet 1">
+                <img src="https://images.unsplash.com/photo-1598133894008-61f7fdb8cc3a?auto=format&fit=crop&w=400&q=80" class="gallery-img" alt="Pet 2">
+                <img src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=800&q=80" class="gallery-img" alt="Pet 3">
+            </div>
+
+            <!-- 6. Contact Footer -->
+            <div class="contact-section">
+                <h2>Venha nos visitar!</h2>
+                <div class="contact-info-grid">
+                    <div class="contact-item">
+                        <i data-lucide="map-pin"></i> Rua dos Pets Felizes, 123 - Centro
+                    </div>
+                    <div class="contact-item">
+                        <i data-lucide="phone"></i> (11) 99999-9999
+                    </div>
+                    <div class="contact-item">
+                        <i data-lucide="clock"></i> Terça a Sábado: 09h às 18h
+                    </div>
+                </div>
+                <div class="contact-map-placeholder">
+                    <div style="text-align:center;">
+                        <i data-lucide="map" size="40" style="opacity:0.5; margin-bottom:10px;"></i>
+                        <p style="color:white; margin:0;">Mapa do Google</p>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -312,16 +411,16 @@ function renderServicesList(services) {
         <div class="container fade-in" style="padding-top:20px;">
             <h2 style="margin-bottom:24px;">Menu de Serviços</h2>
             ${services.map(s => `
-                <div class="card service-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
-                    <div style="flex:1; min-width:200px;">
-                        <h3 style="font-size:1.2rem; color:var(--secondary);">${s.name}</h3>
-                        <p style="font-size:0.95rem; margin-top:4px;">${s.description || 'Cuidado completo para seu pet.'}</p>
-                        <div style="display:flex; gap:12px; margin-top:8px;">
-                            <span style="font-size:0.85rem; background:var(--bg-input); padding:4px 12px; border-radius:20px; color:var(--text-body);">⏱ ${s.duration_minutes} min</span>
+                <div class="card service-card service-card-inner">
+                    <div class="service-info">
+                        <h3 class="service-title">${s.name}</h3>
+                        <p class="service-desc">${s.description || 'Cuidado completo para seu pet.'}</p>
+                        <div class="service-meta">
+                            <span class="service-duration">⏱ ${s.duration_minutes} min</span>
                         </div>
                     </div>
-                    <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-                        <strong style="font-size:1.4rem; color:var(--primary);">${formatCurrency(s.price)}</strong>
+                    <div class="service-action">
+                        <strong class="service-price">${formatCurrency(s.price)}</strong>
                         <button class="btn btn-primary btn-sm" data-route="${state.user ? 'dashboard' : 'login'}">Agendar</button>
                     </div>
                 </div>
@@ -332,10 +431,10 @@ function renderServicesList(services) {
 
 function renderLogin() {
     return `
-        <div class="container fade-in" style="padding-top:40px; max-width:450px;">
-            <div class="card" style="padding:40px;">
-                <div style="text-align:center; margin-bottom:32px;">
-                    <h1 style="font-size:2rem;">Bem-vindo</h1>
+        <div class="container auth-container fade-in">
+            <div class="card auth-card">
+                <div class="auth-header">
+                    <h1 class="auth-title">Bem-vindo</h1>
                     <p>Acesse para agendar o spa do seu pet</p>
                 </div>
                 <form id="login-form">
@@ -348,8 +447,8 @@ function renderLogin() {
                         <input type="password" id="password" required placeholder="••••••">
                     </div>
                     <button type="submit" class="btn btn-primary" style="margin-bottom:20px;">Entrar</button>
-                    <div class="text-center">
-                        <a href="#" data-route="register" style="color:var(--primary); font-weight:700; text-decoration:none;">Criar conta nova</a>
+                    <div class="auth-footer">
+                        <a href="#" data-route="register" class="auth-link">Criar conta nova</a>
                     </div>
                 </form>
             </div>
@@ -359,9 +458,9 @@ function renderLogin() {
 
 function renderRegister() {
     return `
-        <div class="container fade-in" style="padding-top:40px; max-width:450px;">
-            <div class="card" style="padding:40px;">
-                <h2 class="text-center" style="margin-bottom:32px; font-size:2rem;">Criar Conta</h2>
+        <div class="container auth-container fade-in">
+            <div class="card auth-card">
+                <h2 class="auth-title auth-header">Criar Conta</h2>
                 <form id="register-form">
                     <div class="form-group">
                         <label>Nome Completo</label>
@@ -380,8 +479,8 @@ function renderRegister() {
                         <input type="password" id="reg-password" required minlength="6">
                     </div>
                     <button type="submit" class="btn btn-primary">Cadastrar</button>
-                    <p class="text-center" style="margin-top:24px;">
-                        <a href="#" data-route="login" style="color:var(--text-body);">Já tenho conta</a>
+                    <p class="auth-footer">
+                        <a href="#" data-route="login" class="auth-link auth-link-secondary">Já tenho conta</a>
                     </p>
                 </form>
             </div>
@@ -402,50 +501,50 @@ function renderDashboard(profile, pets, services, appointments, globalApps) {
     return `
         <div class="container fade-in dashboard-grid" style="padding-top:24px;">
             <div>
-                <div class="card" style="background:var(--secondary); color:white; border:none; display:flex; align-items:center; justify-content:space-between;">
-                    <div>
-                        <h3 style="color:white; font-size:1.5rem;">Olá, ${profile?.full_name?.split(' ')[0] || 'Cliente'}!</h3>
-                        <p style="margin:0; color:rgba(255,255,255,0.7);">Seu painel de controle.</p>
+                <div class="card dashboard-header-card">
+                    <div class="dashboard-welcome">
+                        <h3>Olá, ${profile?.full_name?.split(' ')[0] || 'Cliente'}!</h3>
+                        <p>Seu painel de controle.</p>
                     </div>
-                    <div style="font-size:2.5rem;">🐶</div>
+                    <div class="dashboard-icon">🐶</div>
                 </div>
 
                 ${nextApp ? `
-                    <div class="card" style="border: 2px solid var(--primary);">
-                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <div class="card next-app-card">
+                        <div class="next-app-header">
                             <div>
-                                <h3 style="color:var(--primary); font-size:1rem; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px;">Próximo</h3>
-                                <div style="font-size:1.4rem; font-weight:700; color:var(--secondary);">${formatDate(nextApp.start_time)}</div>
-                                <span style="font-size:1rem; color:var(--text-body);">${nextApp.services.name} para <strong>${nextApp.pets.name}</strong></span>
+                                <h3 class="next-app-label">Próximo</h3>
+                                <div class="next-app-time">${formatDate(nextApp.start_time)}</div>
+                                <span class="next-app-detail">${nextApp.services.name} para <strong>${nextApp.pets.name}</strong></span>
                             </div>
                             <div style="text-align:right;">
-                                <div style="background:${getStatusColor(nextApp.status)}; color:white; padding:6px 12px; border-radius:20px; font-size:0.75rem; text-transform:uppercase; font-weight:800; display:inline-block; margin-bottom:8px;">${getStatusLabel(nextApp.status)}</div>
+                                <div class="status-badge bg-${nextApp.status}">${getStatusLabel(nextApp.status)}</div>
                             </div>
                         </div>
                         <button class="btn btn-primary" style="margin-top:20px;" data-route="tracker" data-param="${nextApp.id}">Acompanhar Pedido</button>
                     </div>
                 ` : ''}
 
-                <div style="display:flex; justify-content:space-between; align-items:center; margin: 32px 0 16px;">
+                <div class="pet-section-header">
                      <h3>Meus Pets</h3>
                 </div>
 
                 ${pets.length === 0 
-                    ? `<div class="card" style="text-align:center; padding:40px;">
-                         <div style="font-size:3rem; margin-bottom:16px; color:var(--text-light);"><i data-lucide="dog"></i></div>
+                    ? `<div class="card empty-pets">
+                         <div class="empty-pets-icon"><i data-lucide="dog"></i></div>
                          <p>Nenhum pet cadastrado.</p>
                          <button class="btn btn-primary" data-route="new-pet">Cadastrar Pet</button>
                        </div>` 
-                    : `<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:32px;">
+                    : `<div class="pet-grid">
                         ${pets.map(p => `
-                            <div class="card" style="margin:0; text-align:center; padding:20px;">
-                                <div style="width:60px; height:60px; background:var(--bg-input); border-radius:50%; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; color:var(--secondary); font-size:1.5rem;">🐾</div>
+                            <div class="card pet-card">
+                                <div class="pet-icon">🐾</div>
                                 <strong>${p.name}</strong>
-                                <div style="font-size:0.8rem; color:var(--text-body); margin-top:4px;">${p.breed || 'SRD'}</div>
+                                <div class="pet-breed">${p.breed || 'SRD'}</div>
                             </div>
                         `).join('')}
-                         <div class="card" style="margin:0; text-align:center; padding:20px; border:2px dashed var(--text-light); box-shadow:none; display:flex; align-items:center; justify-content:center; cursor:pointer; background:transparent;" data-route="new-pet">
-                            <span style="color:var(--text-body); font-weight:700; display:flex; flex-direction:column; align-items:center; gap:8px;">
+                         <div class="card add-pet-card" data-route="new-pet">
+                            <span class="add-pet-content">
                                 <i data-lucide="plus-circle" size="24"></i> Adicionar
                             </span>
                         </div>
@@ -511,11 +610,11 @@ function renderUserProfile(profile, appointments) {
         <div class="container fade-in" style="padding-top:20px;">
              <div class="profile-header">
                 <div class="profile-avatar">${profile.full_name.charAt(0)}</div>
-                <div>
+                <div class="profile-info">
                     <h2 style="color:white;">${profile.full_name}</h2>
-                    <p style="color:rgba(255,255,255,0.8); margin:0;">Membro desde 2024</p>
+                    <p>Membro desde 2024</p>
                 </div>
-                <button id="logout-btn-profile" class="btn btn-ghost" style="position:absolute; right:20px; top:20px; color:white; border-color:white; width:auto; height:40px;">Sair</button>
+                <button id="logout-btn-profile" class="btn btn-ghost profile-logout-btn">Sair</button>
              </div>
 
              <div class="stat-grid">
@@ -532,14 +631,14 @@ function renderUserProfile(profile, appointments) {
              <div class="card">
                 <h3>Histórico Completo</h3>
                 ${appointments.length === 0 ? '<p>Sem histórico ainda.</p>' : `
-                    <div style="display:flex; flex-direction:column; gap:16px; margin-top:16px;">
+                    <div class="history-list">
                         ${appointments.map(app => `
-                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:12px;">
+                            <div class="history-item">
                                 <div>
-                                    <div style="font-weight:700;">${app.services?.name}</div>
-                                    <div style="font-size:0.85rem; color:var(--text-light);">${formatDate(app.start_time)} • ${app.pets?.name}</div>
+                                    <div class="history-title">${app.services?.name}</div>
+                                    <div class="history-meta">${formatDate(app.start_time)} • ${app.pets?.name}</div>
                                 </div>
-                                <div style="background:${getStatusColor(app.status)}20; color:${getStatusColor(app.status)}; padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:700;">
+                                <div class="history-badge tag-${app.status}">
                                     ${getStatusLabel(app.status)}
                                 </div>
                             </div>
@@ -556,7 +655,7 @@ function renderTrackerList(appointments) {
 
     return `
         <div class="container fade-in" style="padding-top:24px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <div class="tracker-header">
                 <button class="btn btn-ghost" style="width:auto; height:48px;" data-route="dashboard">← Voltar</button>
                 <h2>Meus Agendamentos</h2>
                 <div style="width:40px;"></div>
@@ -568,30 +667,28 @@ function renderTrackerList(appointments) {
                     <button class="btn btn-primary" data-route="dashboard" style="max-width:200px; margin:0 auto;">Agendar Agora</button>
                 </div>
             ` : sorted.map(app => {
-                const color = getStatusColor(app.status);
                 const label = getStatusLabel(app.status);
                 const isClickable = app.status !== 'cancelled';
                 
                 return `
-                <div class="card" 
-                     style="display:flex; justify-content:space-between; align-items:center; cursor:${isClickable ? 'pointer' : 'default'}; border-left: 6px solid ${color};"
+                <div class="card tracker-card border-${app.status} ${isClickable ? 'clickable' : 'default'}" 
                      ${isClickable ? `data-route="tracker" data-param="${app.id}"` : ''}
                 >
-                    <div style="display:flex; gap:16px; align-items:center;">
-                         <div style="width:50px; height:50px; background:var(--bg-input); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--text-light);">
+                    <div class="tracker-info">
+                         <div class="tracker-icon">
                             <i data-lucide="calendar"></i>
                          </div>
                          <div>
-                            <div style="font-size:0.85rem; color:var(--text-light); text-transform:uppercase; font-weight:700;">${formatDate(app.start_time)}</div>
-                            <strong style="font-size:1.1rem; display:block; margin:2px 0; color:var(--secondary);">${app.services.name}</strong>
-                            <div style="font-size:0.95rem;">Pet: <strong>${app.pets.name}</strong></div>
+                            <div class="tracker-date">${formatDate(app.start_time)}</div>
+                            <strong class="tracker-service">${app.services.name}</strong>
+                            <div class="tracker-pet">Pet: <strong>${app.pets.name}</strong></div>
                         </div>
                     </div>
-                    <div style="text-align:right;">
-                        <span style="background:${color}15; color:${color}; padding:6px 16px; border-radius:20px; font-size:0.8rem; font-weight:800;">
+                    <div class="tracker-actions">
+                        <span class="status-badge tag-${app.status}">
                             ${label}
                         </span>
-                        ${isClickable ? '<div style="margin-top:8px; font-size:1.2rem; color:var(--text-light);"><i data-lucide="chevron-right"></i></div>' : ''}
+                        ${isClickable ? '<div class="tracker-chevron"><i data-lucide="chevron-right"></i></div>' : ''}
                     </div>
                 </div>
                 `;
@@ -617,21 +714,21 @@ function renderTrackerDetail(appointment) {
 
     return `
         <div class="container fade-in" style="padding-top:24px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:24px;">
+            <div class="tracker-detail-header">
                 <button class="btn btn-ghost" style="width:auto;" data-route="tracker">← Voltar</button>
             </div>
             
-            <div class="card text-center" style="padding:40px 24px;">
-                <div style="width:80px; height:80px; background:var(--primary-light); color:var(--primary); border-radius:50%; margin:0 auto 20px; display:flex; align-items:center; justify-content:center; font-size:2rem;">
+            <div class="card status-card">
+                <div class="status-icon-lg">
                     <i data-lucide="dog"></i>
                 </div>
-                <h2 style="font-size:1.8rem;">Status do Pedido</h2>
-                <p style="color:var(--text-body); font-size:1.1rem; margin-top:8px;">Pet: <strong>${appointment.pets.name}</strong></p>
-                <div style="background:var(--bg-input); display:inline-block; padding:8px 16px; border-radius:20px; margin-top:16px; font-weight:600;">
+                <h2 class="status-title">Status do Pedido</h2>
+                <p class="status-pet">Pet: <strong>${appointment.pets.name}</strong></p>
+                <div class="status-pill">
                     ${appointment.services.name} • ${formatDate(appointment.start_time)}
                 </div>
                 
-                ${appointment.status === 'cancelled' ? '<strong style="color:var(--danger); display:block; margin-top:24px; font-size:1.2rem;">PEDIDO CANCELADO</strong>' : ''}
+                ${appointment.status === 'cancelled' ? '<strong class="status-cancelled-msg">PEDIDO CANCELADO</strong>' : ''}
             </div>
 
             ${appointment.status !== 'cancelled' ? `
@@ -654,9 +751,9 @@ function renderTrackerDetail(appointment) {
                 </div>
             </div>
 
-            <div class="card" style="background:var(--primary); color:white; border:none; text-align:center;">
-                <strong style="text-transform:uppercase; letter-spacing:1px; font-size:0.9rem; opacity:0.9;">Mensagem</strong>
-                <p style="margin-top:8px; font-size:1.2rem; font-weight:600; color:white;">
+            <div class="card message-card">
+                <strong class="message-label">Mensagem</strong>
+                <p class="message-text">
                     ${stepIndex === 0 ? 'Aguardando confirmação da equipe.' : ''}
                     ${stepIndex === 1 ? 'Agendamento confirmado! Aguardamos vocês.' : ''}
                     ${stepIndex === 2 ? 'Seu pet está aproveitando o banho agora!' : ''}
@@ -697,16 +794,7 @@ function renderPetForm() {
 }
 
 // --- Utils ---
-function getStatusColor(status) {
-    const map = { 
-        pending: '#FDCB6E',  // Amarelo
-        confirmed: '#00B894', // Verde Teal
-        in_progress: '#0984E3', // Azul Vivo
-        completed: '#636E72', // Cinza Escuro
-        cancelled: '#FF7675' // Vermelho Suave
-    };
-    return map[status] || '#B2BEC3';
-}
+// Status colors moved to CSS
 function getStatusLabel(status) {
     const map = { pending: 'Pendente', confirmed: 'Agendado', in_progress: 'No Banho', completed: 'Pronto', cancelled: 'Cancelado' };
     return map[status] || status;

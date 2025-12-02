@@ -23,28 +23,10 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#FF8C42', /* Laranja Premium */
-                        secondary: '#2D3436', /* Carvão */
-                        accent: '#FFF5EB', /* Creme Suave */
+                        primary: '#FF8C42', 
+                        secondary: '#2D3436', 
+                        accent: '#FFF5EB', 
                         surface: '#FFFFFF',
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Quicksand', 'sans-serif'],
-                    },
-                    animation: {
-                        'fade-in': 'fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0', transform: 'scale(0.98)' },
-                            '100%': { opacity: '1', transform: 'scale(1)' },
-                        },
-                        slideUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        }
                     }
                 }
             },
@@ -53,22 +35,21 @@
             }
         }
     </script>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
 
     <!-- Header Mobile Fixo -->
     <div class="mobile-header-bar">
-        <div style="font-family:'Quicksand'; font-size:1.4rem; font-weight:800; color:var(--secondary);">🐾 PetSpa</div>
+        <div class="brand-text-mobile">🐾 PetSpa</div>
         <!-- Botão auxiliar para Chat -->
-        <button class="btn-icon-sm" data-route="chat" style="background:var(--primary-light); color:var(--primary);">
+        <button class="btn-icon-sm btn-icon-brand" data-route="chat">
             <i data-lucide="message-circle"></i>
         </button>
     </div>
 
     <!-- Header Desktop -->
     <header class="desktop-nav">
-        <div style="font-family:'Quicksand'; font-size:1.6rem; font-weight:800; color:var(--secondary); cursor:pointer;" data-route="home">🐾 PetSpa</div>
+        <div class="brand-text-desktop" data-route="home">🐾 PetSpa</div>
         <nav class="nav-links-desktop" id="desktop-links">
             <!-- Injetado via JS -->
         </nav>
@@ -95,6 +76,5 @@
             lucide.createIcons();
         });
     </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>

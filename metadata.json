@@ -1,0 +1,7 @@
+{
+  "name": "petSpa",
+  "description": "Um assistente de IA robusto e minimalista construído com Vanilla JS e Tailwind CSS, capaz de processar texto e visão.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

@@ -139,20 +139,20 @@ async function renderEmployeesView() {
                         <input type="password" id="emp-pass" required minlength="6">
                     </div>
                     <button type="submit" class="btn btn-secondary">Cadastrar Funcionário</button>
-                    <p style="margin-top:10px; font-size:0.8rem; color:var(--text-light);">*Nota: Ao criar usuário, você será deslogado da conta atual por segurança.</p>
+                    <p class="form-note">*Nota: Ao criar usuário, você será deslogado da conta atual por segurança.</p>
                 </form>
             </div>
 
             <div class="card">
                 <h3>Equipe Atual</h3>
-                <div style="margin-top:16px; display:grid; gap:12px;">
+                <div class="employee-grid">
                     ${employees.map(emp => `
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px; background:var(--bg-input); border-radius:12px;">
+                        <div class="employee-item">
                             <div>
                                 <strong>${emp.full_name}</strong>
-                                <div style="font-size:0.8rem; color:var(--text-body);">${emp.role.toUpperCase()}</div>
+                                <div class="employee-role">${emp.role.toUpperCase()}</div>
                             </div>
-                            <div style="width:32px; height:32px; background:white; border-radius:50%; display:flex; align-items:center; justify-content:center;">👤</div>
+                            <div class="employee-avatar">👤</div>
                         </div>
                     `).join('')}
                 </div>
@@ -204,15 +204,15 @@ function renderKanbanCard(app, columnType) {
     }
 
     return `
-    <div class="kanban-card ${columnType}">
-        <div style="display:flex; justify-content:space-between; align-items:start;">
-            <div style="font-size:0.8rem; color:var(--text-light); margin-bottom:4px;">${formatDate(app.start_time)}</div>
-            <button class="btn-xs" style="background:transparent; color:var(--text-light); padding:0;" onclick="window.openEditModal('${app.id}')">✏️</button>
+    <div class="kanban-card border-${app.status}">
+        <div class="kanban-card-header">
+            <div class="kanban-date">${formatDate(app.start_time)}</div>
+            <button class="kanban-edit-btn" onclick="window.openEditModal('${app.id}')">✏️</button>
         </div>
-        <div style="font-weight:700; color:var(--primary);">${app.pets?.name}</div>
-        <div style="font-size:0.9rem; margin-bottom:4px;">${app.profiles?.full_name}</div>
-        <div style="font-size:0.8rem; background:var(--bg-input); padding:4px 8px; border-radius:4px; display:inline-block;">${app.services?.name}</div>
-        <div style="margin-top:12px; display:flex; gap:8px;">${actions}</div>
+        <div class="kanban-pet-name">${app.pets?.name}</div>
+        <div class="kanban-client-name">${app.profiles?.full_name}</div>
+        <div class="kanban-service-tag">${app.services?.name}</div>
+        <div class="kanban-actions">${actions}</div>
     </div>
     `;
 }
@@ -235,10 +235,10 @@ export async function renderAdminDashboard() {
 
     return `
         <div class="container fade-in" style="padding-top:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div class="admin-header">
                 <div>
                     <h2>Painel Admin</h2>
-                    <span style="background:var(--secondary); color:white; padding:4px 12px; border-radius:20px; font-size:0.8rem;">Master View</span>
+                    <span class="master-view-badge">Master View</span>
                 </div>
             </div>
 
@@ -256,9 +256,9 @@ export async function renderAdminDashboard() {
             <!-- Modal de Edição Completa -->
             <div id="edit-modal" class="modal-overlay">
                 <div class="modal-content">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:20px;">
+                    <div class="modal-header">
                         <h3>Editar Agendamento</h3>
-                        <button onclick="document.getElementById('edit-modal').classList.remove('open')" style="background:none; border:none; font-size:1.5rem;">&times;</button>
+                        <button onclick="document.getElementById('edit-modal').classList.remove('open')" class="modal-close-btn">&times;</button>
                     </div>
                     <form id="edit-form">
                         <input type="hidden" id="edit-id">
@@ -282,7 +282,7 @@ export async function renderAdminDashboard() {
                         </div>
                          <div class="form-group">
                             <label>Pet (ID)</label>
-                            <input type="text" id="edit-pet-id" readonly style="background:#eee;">
+                            <input type="text" id="edit-pet-id" readonly class="input-readonly">
                         </div>
                         <button type="submit" class="btn btn-primary">Salvar Alterações</button>
                     </form>
